@@ -1,11 +1,11 @@
 
-// import './App.css'
-import DashBoard from './pages/DashBoard'
+import './App.css'
+import DashBoard from './pages/DashboardPage'
 function App() {
 
   return (
     <>
-      <DashBoard/>
+      <DashboardPage/>
     </>
   )
 }
