@@ -1,0 +1,68 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  .container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+  
+  .card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    width: 350px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.8s ease-in-out;
+  }
+  
+  .card h2 {
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .card p {
+    margin-bottom: 25px;
+    color: #777;
+  }
+  
+  .profile img {
+    width: 90px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+  }
+  
+  .profile h3 {
+    margin-bottom: 5px;
+  }
+  
+  .profile p {
+    margin-bottom: 20px;
+    color: gray;
+  }
+  
+  .profile button {
+    padding: 10px 20px;
+    border: none;
+    background: #764ba2;
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .profile button:hover {
+    background: #5a3c91;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
