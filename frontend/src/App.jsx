@@ -1,12 +1,14 @@
+
 import './App.css'
-import Login from './Pages/LoginPage'
+import DashboardPage from './pages/DashboardPage'
+import Login from './pages/LoginPage'
 
 function App() {
 
   return (
     <>
+    {/* <DashboardPage/> */}
     <Login />
-    
      
     </>
   )
