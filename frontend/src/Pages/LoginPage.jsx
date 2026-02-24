@@ -1,14 +1,26 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/login.css";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [user, setUser] = useState(null);
+  const [user,] = useState(null);
+  const navigate = useNavigate();
 
-  const handleSuccess = (credentialResponse) => {
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, []);
+
+  const handleGoogleSuccess = (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
-    setUser(decoded);
+  
+    localStorage.setItem("user", JSON.stringify(decoded));
+  
+    navigate("/dashboard");
   };
 
   const handleError = () => {
@@ -24,7 +36,7 @@ function Login() {
             <p>Login with Google to continue</p>
 
             <GoogleLogin
-              onSuccess={handleSuccess}
+              onSuccess={handleGoogleSuccess}
               onError={handleError}
               theme="outline"
               size="large"
