@@ -1,0 +1,241 @@
+version: '3.8'
+
+services:
+  # Production MongoDB (if not using Atlas)
+  mongodb:
+    image: mongo:7.0
+    container_name: chat-mongodb-prod
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongodb/mongod.conf:/etc/mongod.conf
+    command: mongod --config /etc/mongod.conf
+    networks:
+      - chat-network
+
+  # Production Redis
+  redis:
+    image: redis:7.2-alpine
+    container_name: chat-redis-prod
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis_data:/data
+    networks:
+      - chat-network
+
+  # Production Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: chat-zookeeper-prod
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_LOG4J_ROOT_LOGLEVEL: WARN
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - chat-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: chat-kafka-prod
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - chat-network
+
+  # Auth Service
+  auth-service:
+    build: 
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: chat-auth-service-prod
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGODB_URI=${MONGODB_URI_AUTH:-mongodb://admin:password123@mongodb:27017/chat-auth?authSource=admin}
+      - REDIS_URL=${REDIS_URL:-redis://redis123@redis:6379}
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-https://yourdomain.com}
+    depends_on:
+      - mongodb
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - chat-network
+
+  # User Service
+  user-service:
+    build: 
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: chat-user-service-prod
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - MONGODB_URI=${MONGODB_URI_USER:-mongodb://admin:password123@mongodb:27017/chat-users?authSource=admin}
+      - REDIS_URL=${REDIS_URL:-redis://redis123@redis:6379}
+      - JWT_SECRET=${JWT_SECRET}
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - FRONTEND_URL=${FRONTEND_URL:-https://yourdomain.com}
+    depends_on:
+      - mongodb
+      - redis
+      - auth-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - chat-network
+
+  # Chat Service
+  chat-service:
+    build: 
+      context: ./chat-service
+      dockerfile: Dockerfile
+    container_name: chat-chat-service-prod
+    restart: always
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - MONGODB_URI=${MONGODB_URI_CHAT:-mongodb://admin:password123@mongodb:27017/chat-messages?authSource=admin}
+      - REDIS_URL=${REDIS_URL:-redis://redis123@redis:6379}
+      - KAFKA_BROKERS=kafka:29092
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - FRONTEND_URL=${FRONTEND_URL:-https://yourdomain.com}
+    depends_on:
+      - mongodb
+      - redis
+      - kafka
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - chat-network
+
+  # Media Service
+  media-service:
+    build: 
+      context: ./media-service
+      dockerfile: Dockerfile
+    container_name: chat-media-service-prod
+    restart: always
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - CLOUDINARY_API=${CLOUDINARY_API}
+      - CLOUDINARY_SECRET=${CLOUDINARY_SECRET}
+      - CLOUD_NAME=${CLOUD_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-https://yourdomain.com}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - chat-network
+
+  # API Gateway
+  api-gateway:
+    build: 
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: chat-api-gateway-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - CHAT_SERVICE_URL=http://chat-service:3003
+      - MEDIA_SERVICE_URL=http://media-service:3004
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-https://yourdomain.com}
+    depends_on:
+      - auth-service
+      - user-service
+      - chat-service
+      - media-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - chat-network
+
+  # Nginx Reverse Proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: chat-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - api-gateway
+    networks:
+      - chat-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+  zookeeper_data:
+  kafka_data:
+  nginx_logs:
+
+networks:
+  chat-network:
+    driver: bridge
