@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
 function ProfileIcon() {
-  return (
-    <div>
-      
-    </div>
-  )
+  return <div></div>;
 }
 
-export default ProfileIcon
+export default ProfileIcon;
