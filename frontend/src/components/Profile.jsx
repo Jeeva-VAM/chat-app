@@ -1,7 +1,10 @@
 import { useState } from "react";
 import "../styles/profile.css";
+import { useNavigate } from "react-router";
 
 function Profile() {
+
+    const navigate = useNavigate();
 
   // Simulate OAuth login - user initially has minimal info
   const [user, setUser] = useState({
@@ -120,13 +123,19 @@ function Profile() {
     }
   };
 
+  
+  const handleBack=()=>{
+    console.log("back")
+    navigate(-1)
+  }
   return (
     <div className="profile-page">
       <div className="profile-container">
         
         {/* Header Section */}
         <div className="profile-header">
-          <div className="cover-image"></div>
+          <div className="cover-image">
+          </div>
           <div className="profile-main">
             <div className="avatar-section">
               <div className="avatar">
@@ -336,6 +345,7 @@ function Profile() {
             </div>
           </div>
         </div>
+         <button onClick={handleBack}>back</button>
 
         {/* Edit Modal */}
         {isEditing && (
