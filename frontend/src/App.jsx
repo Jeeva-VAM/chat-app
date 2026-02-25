@@ -6,13 +6,13 @@ import { Routes, Route } from "react-router-dom";
 
 function App() {
   return (
-    <div className="App">
+    <>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<DashboardPage />} />
       </Routes>
-    </div>
-  )
+    </>
+  );
 }
 
-export default App
+export default App;
