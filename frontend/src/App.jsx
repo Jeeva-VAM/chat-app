@@ -1,6 +1,6 @@
 
-// import './App.css'
-import DashboardPage from './pages/DashboardPage'
+import './App.css'
+import DashboardPage from './Pages/DashboardPage'
 import Login from './Pages/LoginPage'
 import { Routes, Route } from "react-router-dom";
 
