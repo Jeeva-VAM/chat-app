@@ -55,7 +55,7 @@ New-Item -ItemType Directory -Force -Path "uploads\temp" | Out-Null
 $envContent = Get-Content .env -Raw
 if ($envContent -match "ENCRYPTION_KEY=your-32-character-encryption-key") {
     Write-Host "🔑 Generating encryption key..." -ForegroundColor Yellow
-    $encryptionKey = -join ((1..64) | ForEach {'{0:X}' -f (Get-Random -Max 16)})
+    $encryptionKey = -join ((1..64) | ForEach-Object {'{0:X}' -f (Get-Random -Max 16)})
     $encryptionKey = $encryptionKey.Substring(0, 64)
     $envContent = $envContent -replace "your-32-character-encryption-key", $encryptionKey
     Set-Content -Path .env -Value $envContent
@@ -65,7 +65,7 @@ if ($envContent -match "ENCRYPTION_KEY=your-32-character-encryption-key") {
 # Generate JWT secret if not exists
 if ($envContent -match "JWT_SECRET=your-super-secret-jwt-key-change-this-in-production") {
     Write-Host "🔑 Generating JWT secret..." -ForegroundColor Yellow
-    $jwtSecret = -join ((1..128) | ForEach {[char](Get-Random -Min 33 -Max 127)})
+    $jwtSecret = -join ((1..128) | ForEach-Object {[char](Get-Random -Min 33 -Max 127)})
     $jwtSecret = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($jwtSecret))
     $envContent = $envContent -replace "your-super-secret-jwt-key-change-this-in-production", $jwtSecret
     Set-Content -Path .env -Value $envContent
