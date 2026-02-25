@@ -1,0 +1,38 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Node modules
+node_modules/
+
+# Uploads and temporary files
+uploads/
+temp/
+tmp/
+
+# Database files
+*.db
+*.sqlite
+
+# Redis dump
+dump.rdb
+
+# Build outputs
+dist/
+build/
+
+# Coverage reports
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
