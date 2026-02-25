@@ -5,7 +5,7 @@ import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [user,] = useState(null);
+  const [user] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,9 +17,9 @@ function Login() {
 
   const handleGoogleSuccess = (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
-  
+
     localStorage.setItem("user", JSON.stringify(decoded));
-  
+
     navigate("/dashboard");
   };
 
