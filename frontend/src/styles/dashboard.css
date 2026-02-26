@@ -1,0 +1,42 @@
+/* DashboardPage.css */
+
+.dashboard {
+  min-height: 100vh;
+  background: #ffffff; /* dark bg */
+  color: #000000;
+  display: flex;
+  flex-direction: column;
+}
+
+/* center content area */
+.dashboard-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+/* welcome title */
+.dashboard-content h1 {
+  font-size: 2.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* subtitle */
+.dashboard-content p {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* suggestions container */
+.dashboard-content > div {
+  width: 100%;
+  max-width: 90%;/* controls row width */
+  margin-top: 20px;
+}
