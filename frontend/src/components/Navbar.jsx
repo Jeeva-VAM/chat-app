@@ -11,7 +11,7 @@ function Navbar() {
       </div>
 
       <div className="nav-right">
-        {/* future buttons */}
+        
       </div>
     </div>
   );
