@@ -1,23 +1,177 @@
+/* Navbar Container */
 .navbar {
-  height: 60px;
-  background: #0f0f0f;
-  border-bottom: 1px solid #1f1f1f;
-
+  width: 100%;
+  height: 70px;
+  background-color: #ffffff;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-
-  padding: 0 20px;
+  align-items: center;
+  padding: 0 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
+/* Left Section */
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 30px;
 }
 
+/* Logo */
 .logo {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
-  color: white;
+  color: #4a6cf7;
+  letter-spacing: 1px;
+  
+}
+
+/* Search Box */
+.search-box input {
+  width: 260px;
+  padding: 8px 15px;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  outline: none;
+  transition: 0.3s ease;
+  font-size: 14px;
+}
+
+.search-box input:focus {
+  border-color: #4a6cf7;
+  box-shadow: 0 0 5px rgba(74, 108, 247, 0.4);
+}
+
+/* Right Section */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Message Icon */
+.icon-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.message-icon {
+  font-size: 25px;
+  color: #555;
+  transition: 0.3s ease;
+}
+
+.message-icon:hover {
+  color: #4a6cf7;
+  transform: scale(1.1);
+}
+
+/* Profile Image */
+.profile-image {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #4a6cf7;
+  transition: 0.3s ease;
+}
+
+.profile-image:hover {
+  transform: scale(1.08);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-box input {
+    width: 150px;
+  }
+
+  .navbar {
+    padding: 0 20px;
+  }
+}
+
+/* Profile Wrapper */
+.profile-wrapper {
+  position: relative;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: 55px;
+  right: 0;
+  width: 160px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: 8px 0;
+  animation: fadeIn 0.2s ease-in-out;
+  z-index: 200;
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+/* Logout Style */
+.logout {
+  color: #e63946;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Search Box Container */
+.search-box {
+  position: relative;
+}
+
+/* Search Input */
+.search-box input {
+  width: 260px;
+  padding: 8px 15px 8px 38px; /* Left padding for icon */
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  outline: none;
+  transition: 0.3s ease;
+  font-size: 14px;
+}
+
+/* Focus Effect */
+.search-box input:focus {
+  border-color: #4a6cf7;
+  box-shadow: 0 0 5px rgba(74, 108, 247, 0.4);
+}
+
+/* Search Icon */
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #888;
+  pointer-events: none; /* Important */
 }

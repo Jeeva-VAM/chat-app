@@ -4,13 +4,7 @@ import Suggestions from "../components/suggestions";
 import SuggestionsRow from "../components/SuggestionsRow";
 
 function DashboardPage() {
-  const [user] = useState(() => {
-    const userDetails = localStorage.getItem("user");
-    return userDetails ? JSON.parse(userDetails) : null;
-  });
-
-  if (!user) return null;
-
+  
   return (
     <div className="dashboard">
       <Navbar />
@@ -23,7 +17,7 @@ function DashboardPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default DashboardPage;
+export default DashboardPage
