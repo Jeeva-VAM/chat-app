@@ -223,3 +223,8 @@ frontend/.env
 frontend/.env.local
 frontend/build/
 frontend/dist/
+
+#linked-profile 
+frontend/src/styles/linkedin-profile.css
+frontend/src/styles/profile.css
+frontend/src/components/Profile_old.jsx
