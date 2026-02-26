@@ -1,0 +1,38 @@
+{
+  "profiles": [
+    {
+      "id": 1,
+      "name": "Julia Smith",
+      "email": "julia@example.com",
+      "profileImage": "",
+      "headline": "",
+      "location": "",
+      "bio": "",
+      "connections": 0,
+      "followers": 0,
+      "provider": "google",
+      "joinDate": "February 2026",
+      "status": "online",
+      "lastSeen": "2026-02-26T10:30:00Z",
+      "experience": [],
+      "skills": [],
+      "interests": {
+        "companies": [],
+        "topics": []
+      },
+      "preferences": {
+        "theme": "auto",
+        "notifications": {
+          "sound": true,
+          "desktop": true,
+          "email": false
+        },
+        "privacy": {
+          "showLastSeen": true,
+          "showProfileImage": true,
+          "allowMessagesFromStrangers": true
+        }
+      }
+    }
+  ]
+}
