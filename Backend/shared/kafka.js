@@ -17,15 +17,21 @@ const connectKafka = async () => {
 
     return { kafka, producer };
   } catch (error) {
-    console.error('Kafka connection error:', error);
-    throw error;
+    console.warn('Kafka connection failed (continuing without Kafka):', error.message);
+    kafka = null;
+    producer = null;
+    return null;
   }
 };
 
 const createConsumer = async (groupId, topics) => {
   try {
     if (!kafka) {
-      await connectKafka();
+      const result = await connectKafka();
+      if (!result) {
+        console.warn('Skipping Kafka consumer creation - Kafka not available');
+        return null;
+      }
     }
 
     consumer = kafka.consumer({ groupId });
@@ -35,15 +41,19 @@ const createConsumer = async (groupId, topics) => {
     console.log(`Kafka consumer connected for group: ${groupId}`);
     return consumer;
   } catch (error) {
-    console.error('Kafka consumer creation error:', error);
-    throw error;
+    console.warn('Kafka consumer creation failed:', error.message);
+    return null;
   }
 };
 
 const publishMessage = async (topic, message) => {
   try {
     if (!producer) {
-      await connectKafka();
+      const result = await connectKafka();
+      if (!result) {
+        console.warn('Skipping Kafka message publish - Kafka not available');
+        return;
+      }
     }
 
     await producer.send({
@@ -56,7 +66,7 @@ const publishMessage = async (topic, message) => {
       }]
     });
   } catch (error) {
-    console.error('Kafka publish error:', error);
+    console.warn('Kafka publish error:', error.message);
     throw error;
   }
 };
@@ -64,6 +74,11 @@ const publishMessage = async (topic, message) => {
 const subscribeToMessages = async (groupId, topics, messageHandler) => {
   try {
     const consumer = await createConsumer(groupId, topics);
+    
+    if (!consumer) {
+      console.log('Kafka subscription skipped - Kafka not available');
+      return null;
+    }
     
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
@@ -76,8 +91,8 @@ const subscribeToMessages = async (groupId, topics, messageHandler) => {
       },
     });
   } catch (error) {
-    console.error('Kafka subscription error:', error);
-    throw error;
+    console.warn('Kafka subscription error:', error.message);
+    return null;
   }
 };
 

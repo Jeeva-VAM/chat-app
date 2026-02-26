@@ -3,10 +3,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.API_GATEWAY_PORT || 8000;
 
 // Security middleware
 app.use(helmet());
