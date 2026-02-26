@@ -78,7 +78,7 @@
 
 .suggestions-row-wrapper {
   padding: 10px 16px;
-  margin-top: 70px;
+  margin-top: 40px;
 }
 
 .suggestions-row {
@@ -98,4 +98,9 @@
 .suggestions-row::-webkit-scrollbar-thumb {
   background: #1f2937;
   border-radius: 10px;
+}
+
+.suggest-user{
+    color: #090909;
+    text-align: left;
 }

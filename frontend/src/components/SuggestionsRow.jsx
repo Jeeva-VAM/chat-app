@@ -48,7 +48,8 @@ function SuggestionsRow() {
 
     return (
     <div className="suggestions-row-wrapper">
-    <h2>Suggested Users</h2>
+    <h2 className="suggest-user">Suggested Users</h2>
+    <br />
       <div
         className="suggestions-row"
         ref={scrollRef}
