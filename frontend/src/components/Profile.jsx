@@ -141,7 +141,7 @@ function Profile() {
     return count.toString();
   };
 
-  // 🔥 Validation Function
+  //  Validation Function
   const validate = (name, value) => {
     let error = "";
 

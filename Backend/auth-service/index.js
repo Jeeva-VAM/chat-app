@@ -69,7 +69,7 @@ app.use('*', (req, res) => {
 const startServer = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/chat-auth');
+    await mongoose.connect(process.env.MONGODB_URI_AUTH);
     console.log('Connected to MongoDB (Auth Service)');
 
     // Connect to Redis
