@@ -10,7 +10,6 @@ function SuggestionsRow() {
   const scrollRef = useRef(null);
   const loadedCountRef = useRef(0);
 
-  // fill row to screen width
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -22,7 +21,6 @@ function SuggestionsRow() {
     );
 
     const needed = cardsPerScreen * 2; 
-    // *2 so scroll already has extra
 
     const initialUsers = usersData.slice(0, needed);
 
