@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/linkedin-profile.css";
+import "../styles/profile.css";
 
 function Profile() {
   const navigate = useNavigate();
@@ -62,7 +62,6 @@ function Profile() {
       }
     } catch (error) {
       console.error('Failed to fetch profile:', error);
-      // Use default data if server is not running
     } finally {
       setLoading(false);
     }
@@ -86,9 +85,7 @@ function Profile() {
       return false;
     } catch (error) {
       console.error('Failed to update profile:', error);
-      // Fallback to local state update if server is not running
-      setUser(updatedData);
-      return true;
+      return false;
     }
   };
 
@@ -216,18 +213,31 @@ function Profile() {
     }
   };
 
+  const addSkill = (skillName) => {
+    if (skillName && !user.skills.includes(skillName)) {
+      const updatedSkills = [...user.skills, skillName];
+      const updatedUser = { ...user, skills: updatedSkills };
+      updateProfile(updatedUser);
+    }
+  };
+
+  const addExperience = (experience) => {
+    const updatedExperience = [...user.experience, experience];
+    const updatedUser = { ...user, experience: updatedExperience };
+    updateProfile(updatedUser);
+  };
+
   const handleBack = () => {
     navigate(-1);
   };
 
   if (loading) {
     return (
-      <div className="linkedin-profile">
+      <div className="profile-page">
         <div className="loading">Loading profile...</div>
       </div>
     );
   }
-
   return (
     <div className="linkedin-profile">
       {/* Back Button */}
@@ -416,7 +426,229 @@ function Profile() {
         </div>
       </div>
 
-      {/* Edit Modal - LinkedIn-style */}
+        {/* Edit Modal */}
+        {isEditing && (
+          <div className="edit-modal-overlay">
+            <div className="edit-modal">
+              <div className="modal-header">
+                <h2>Edit Profile</h2>
+                <button className="close-btn" onClick={() => setIsEditing(false)}>
+                  <i className="icon-close"></i>
+                </button>
+              </div>
+
+              <div className="form-content">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Full Name *</label>
+                    <input
+                      name="name"
+                      value={editedUser.name}
+                      onChange={handleChange}
+                      placeholder="Enter your full name"
+                    />
+                    {errors.name && <span className="error">{errors.name}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Email Address *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={editedUser.email}
+                      onChange={handleChange}
+                      placeholder="Enter your email"
+                    />
+                    {errors.email && <span className="error">{errors.email}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Profile Image URL</label>
+                    <input
+                      name="profileImage"
+                      value={editedUser.profileImage}
+                      onChange={handleChange}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    {errors.profileImage && <span className="error">{errors.profileImage}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Theme Preference</label>
+                    <select
+                      name="preferences.theme"
+                      value={editedUser.preferences?.theme || 'auto'}
+                      onChange={handleChange}
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="auto">Auto</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Bio (max 500 characters)</label>
+                  <textarea
+                    name="bio"
+                    value={editedUser.bio}
+                    onChange={handleChange}
+                    placeholder="Tell us about yourself, your interests..."
+                    rows="4"
+                    maxLength="500"
+                  />
+                  <div className="char-count">{editedUser.bio?.length || 0}/500</div>
+                  {errors.bio && <span className="error">{errors.bio}</span>}
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Skills & Interests</label>
+                  <input
+                    type="text"
+                    value={skills.join(', ')}
+                    onChange={(e) => {
+                      const skillsArray = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                      setSkills(skillsArray);
+                    }}
+                    placeholder="e.g., React, JavaScript, UI/UX Design, Photography (separate with commas)"
+                  />
+                  <div className="char-count">{skills.length} skills added</div>
+                </div>
+
+                {/* Privacy Settings */}
+                <div className="form-section">
+                  <h3>Privacy Settings</h3>
+                  <div className="checkbox-grid">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editedUser.preferences?.privacy?.showLastSeen ?? true}
+                        onChange={(e) => setEditedUser(prev => ({
+                          ...prev,
+                          preferences: {
+                            ...prev.preferences,
+                            privacy: {
+                              ...prev.preferences?.privacy,
+                              showLastSeen: e.target.checked
+                            }
+                          }
+                        }))}
+                      />
+                      Show when I was last seen
+                    </label>
+                    
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editedUser.preferences?.privacy?.showProfileImage ?? true}
+                        onChange={(e) => setEditedUser(prev => ({
+                          ...prev,
+                          preferences: {
+                            ...prev.preferences,
+                            privacy: {
+                              ...prev.preferences?.privacy,
+                              showProfileImage: e.target.checked
+                            }
+                          }
+                        }))}
+                      />
+                      Show my profile image
+                    </label>
+                    
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editedUser.preferences?.privacy?.allowMessagesFromStrangers ?? true}
+                        onChange={(e) => setEditedUser(prev => ({
+                          ...prev,
+                          preferences: {
+                            ...prev.preferences,
+                            privacy: {
+                              ...prev.preferences?.privacy,
+                              allowMessagesFromStrangers: e.target.checked
+                            }
+                          }
+                        }))}
+                      />
+                      Allow messages from strangers
+                    </label>
+                  </div>
+                </div>
+
+                {/* Notification Settings */}
+                <div className="form-section">
+                  <h3>Notifications</h3>
+                  <div className="checkbox-grid">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editedUser.preferences?.notifications?.sound ?? true}
+                        onChange={(e) => setEditedUser(prev => ({
+                          ...prev,
+                          preferences: {
+                            ...prev.preferences,
+                            notifications: {
+                              ...prev.preferences?.notifications,
+                              sound: e.target.checked
+                            }
+                          }
+                        }))}
+                      />
+                      Sound notifications
+                    </label>
+                    
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editedUser.preferences?.notifications?.desktop ?? true}
+                        onChange={(e) => setEditedUser(prev => ({
+                          ...prev,
+                          preferences: {
+                            ...prev.preferences,
+                            notifications: {
+                              ...prev.preferences?.notifications,
+                              desktop: e.target.checked
+                            }
+                          }
+                        }))}
+                      />
+                      Desktop notifications
+                    </label>
+                    
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editedUser.preferences?.notifications?.email ?? false}
+                        onChange={(e) => setEditedUser(prev => ({
+                          ...prev,
+                          preferences: {
+                            ...prev.preferences,
+                            notifications: {
+                              ...prev.preferences?.notifications,
+                              email: e.target.checked
+                            }
+                          }
+                        }))}
+                      />
+                      Email notifications
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button onClick={() => setIsEditing(false)} className="btn-cancel">
+                    Cancel
+                  </button>
+                  <button onClick={handleSave} className="btn-save">
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* Edit Modal - Enhanced for LinkedIn structure */}
       {isEditing && (
         <div className="modal-overlay">
           <div className="linkedin-edit-modal">
@@ -559,3 +791,7 @@ function Profile() {
 }
 
 export default Profile;
+
+
+
+    
