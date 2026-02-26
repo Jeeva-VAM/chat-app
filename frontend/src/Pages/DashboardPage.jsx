@@ -1,8 +1,4 @@
-import { useState } from "react";
-import Navbar from "../components/Navbar";
-import Suggestions from "../components/suggestions";
 import SuggestionsRow from "../components/SuggestionsRow";
-import user from '../data/users.json'
 import '../styles/dashboard.css'
 function DashboardPage() {
   const userDetail = localStorage.getItem("user");
