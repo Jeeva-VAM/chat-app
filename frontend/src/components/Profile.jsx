@@ -6,7 +6,6 @@ function Profile() {
 
     const navigate = useNavigate();
 
-  // Simulate OAuth login - user initially has minimal info
   const [user, setUser] = useState({
     username: "Keerthana Sadhasivam", // From OAuth provider
     email: "keerthana@gmail.com",     // From OAuth provider
