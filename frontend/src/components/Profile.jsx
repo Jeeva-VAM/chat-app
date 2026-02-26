@@ -48,7 +48,7 @@ function Profile() {
     return placeholders[field] || `Add ${field}`;
   };
 
-  // 🔥 Validation Function
+  //  Validation Function
   const validate = (name, value) => {
     let error = "";
 

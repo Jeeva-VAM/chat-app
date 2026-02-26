@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
 import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
+import { addLoggedUser } from "../utils/loggedUsers";
 
 function Login() {
   const [user] = useState(null);
@@ -13,16 +14,48 @@ function Login() {
     if (user) {
       navigate("/dashboard");
     }
-  }, []);
+  }, [navigate]);
+
+  // const handleGoogleSuccess = async (credentialResponse) => {
+  //   const decoded = jwtDecode(credentialResponse.credential);
+  //   console.log(decoded)
+   
+  //   localStorage.setItem("user", JSON.stringify(decoded));
+    
+    
+  //   await addLoggedUser(decoded);
+    
+  //   console.log("User logged in and added to logged users:", decoded);
+
+  //   navigate("/dashboard");
+  // };
 
   const handleGoogleSuccess = (credentialResponse) => {
-    const decoded = jwtDecode(credentialResponse.credential);
+  const decoded = jwtDecode(credentialResponse.credential);
 
-    localStorage.setItem("user", JSON.stringify(decoded));
-
-    navigate("/dashboard");
+  const newUser = {
+    id: decoded.sub,
+    name: decoded.name,
+    email: decoded.email,
+    picture: decoded.picture,
   };
 
+  // get existing users
+  const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+  // check duplicate
+  const alreadyExists = existingUsers.find(u => u.id === newUser.id);
+
+  if (!alreadyExists) {
+    existingUsers.push(newUser);
+    localStorage.setItem("users", JSON.stringify(existingUsers));
+  }
+
+  // store current user session
+  localStorage.setItem("user", JSON.stringify(newUser));
+
+  navigate("/dashboard");
+};
   const handleError = () => {
     console.log("Login Failed");
   };
