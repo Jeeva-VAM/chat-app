@@ -44,18 +44,24 @@ function Navbar() {
 
       <div className="nav-right">
         <div className="icon-container">
-          <FaEnvelope className="message-icon" />
+          <FaEnvelope
+            className="message-icon"
+            onClick={() => navigate("/messages")}
+          />
         </div>
 
         {user && (
           <div className="profile-wrapper" ref={menuRef}>
             <img
-              src={user.picture}
+              src={user?.picture}
               alt="Profile"
               className="profile-image"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.target.src = "https://ui-avatars.com/api/?name=" + user?.name;
+              }}
               onClick={() => setOpenMenu(!openMenu)}
             />
-
             {openMenu && (
               <div className="dropdown-menu">
                 <div
