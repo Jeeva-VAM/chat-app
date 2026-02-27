@@ -35,7 +35,7 @@ function Login() {
       localStorage.setItem("users", JSON.stringify(existingUsers));
     }
 
-    login(newUser); // ✅ context handles storage
+    login(newUser); 
     navigate("/dashboard");
   };
 
