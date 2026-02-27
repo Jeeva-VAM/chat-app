@@ -15,17 +15,13 @@ function SuggestionsRow() {
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-
     const containerWidth = el.clientWidth;
-
     const cardsPerScreen = Math.ceil(
       containerWidth / (CARD_WIDTH + GAP)
     );
 
     const needed = cardsPerScreen * 2; 
-
     const initialUsers = usersData.slice(0, needed);
-
     loadedCountRef.current = initialUsers.length;
     setVisibleUsers(initialUsers);
   }, []);
