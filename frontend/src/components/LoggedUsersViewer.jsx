@@ -27,8 +27,6 @@ const LoggedUsersViewer = () => {
     await removeLoggedUser(userEmail);
     await refreshUsers();
   };
-
-  // Load users on component mount
   React.useEffect(() => {
     refreshUsers();
   }, []);
