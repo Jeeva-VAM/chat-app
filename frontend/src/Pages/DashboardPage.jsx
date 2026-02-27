@@ -1,21 +1,22 @@
 import SuggestionsRow from "../components/SuggestionsRow";
-import '../styles/dashboard.css'
+import { useAuth } from "../context/AuthContext";
+import "../styles/dashboard.css";
+
 function DashboardPage() {
-  const userDetail = localStorage.getItem("user");
-  const userDetails = JSON.parse(userDetail);
-  console.log(userDetails)
+  const { user } = useAuth();
+
+  if (!user) return null; // or redirect
+
   return (
     <div className="dashboard">
-
       <div className="dashboard-content">
-        <h1>Welcome {userDetails.name} </h1>
+        <h1>Welcome {user.name}</h1>
         <p>Select a chat to start messaging</p>
-        <div>
-          <SuggestionsRow/>
-        </div>
+
+        <SuggestionsRow />
       </div>
     </div>
-  )
+  );
 }
 
-export default DashboardPage
+export default DashboardPage;

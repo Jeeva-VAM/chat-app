@@ -1,63 +1,42 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
-import { addLoggedUser } from "../utils/loggedUsers";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
-  const [user] = useState(null);
+  const { user, login } = useAuth();
   const navigate = useNavigate();
 
+  // redirect if already logged
   useEffect(() => {
-    const user = localStorage.getItem("user");
     if (user) {
       navigate("/dashboard");
     }
-  }, [navigate]);
-
-  // const handleGoogleSuccess = async (credentialResponse) => {
-  //   const decoded = jwtDecode(credentialResponse.credential);
-  //   console.log(decoded)
-   
-  //   localStorage.setItem("user", JSON.stringify(decoded));
-    
-    
-  //   await addLoggedUser(decoded);
-    
-  //   console.log("User logged in and added to logged users:", decoded);
-
-  //   navigate("/dashboard");
-  // };
+  }, [user, navigate]);
 
   const handleGoogleSuccess = (credentialResponse) => {
-  const decoded = jwtDecode(credentialResponse.credential);
+    const decoded = jwtDecode(credentialResponse.credential);
 
-  const newUser = {
-    id: decoded.sub,
-    name: decoded.name,
-    email: decoded.email,
-    picture: decoded.picture,
-  };
+    const newUser = {
+      id: decoded.sub,
+      name: decoded.name,
+      email: decoded.email,
+      picture: decoded.picture,
+    };
 
-  // get existing users
-  const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+    // fake users DB
+    const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+    const alreadyExists = existingUsers.find(u => u.id === newUser.id);
 
-  // check duplicate
-  const alreadyExists = existingUsers.find(u => u.id === newUser.id);
+    if (!alreadyExists) {
+      existingUsers.push(newUser);
+      localStorage.setItem("users", JSON.stringify(existingUsers));
+    }
 
-  if (!alreadyExists) {
-    existingUsers.push(newUser);
-    localStorage.setItem("users", JSON.stringify(existingUsers));
-  }
-
-  // store current user session
-  localStorage.setItem("user", JSON.stringify(newUser));
-
-  navigate("/dashboard");
-};
-  const handleError = () => {
-    console.log("Login Failed");
+    login(newUser); // ✅ context handles storage
+    navigate("/dashboard");
   };
 
   return (
@@ -70,7 +49,7 @@ function Login() {
 
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={handleError}
+              onError={() => console.log("Login Failed")}
               theme="outline"
               size="large"
               shape="pill"
