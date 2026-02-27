@@ -1,34 +1,33 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
 import apiService from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
-  const [user, setUser] = useState(null);
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
+  // Redirect if already logged in
   useEffect(() => {
-    const user = localStorage.getItem('user');
     if (user) {
       navigate("/dashboard");
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Decode the Google JWT to get user info
+      // Decode Google JWT
       const decoded = jwtDecode(credentialResponse.credential);
-      
-      console.log('Google login successful:', decoded);
-      
-      // Create user profile data
+
+      // Build user profile
       const userProfile = {
         userId: decoded.sub,
         name: decoded.name,
@@ -64,8 +63,8 @@ function Login() {
           }
         }
       };
-      
-      // Store user data in localStorage for quick access
+
+      // Store minimal user info in localStorage for quick access
       localStorage.setItem("user", JSON.stringify({
         id: decoded.sub,
         name: decoded.name,
@@ -73,27 +72,29 @@ function Login() {
         picture: decoded.picture,
         sub: decoded.sub
       }));
-      
+
       // Save/update profile in MongoDB
       try {
         await apiService.createOrUpdateProfile(userProfile);
-        console.log('Profile saved to MongoDB successfully');
       } catch (dbError) {
         console.warn('Profile save failed, continuing anyway:', dbError);
       }
-      
-      // Navigate to dashboard
+
+      // Update auth context
+      login({
+        id: decoded.sub,
+        name: decoded.name,
+        email: decoded.email,
+        picture: decoded.picture,
+        sub: decoded.sub
+      });
+
       navigate("/dashboard");
     } catch (error) {
-      console.error('Google login error:', error);
       setError(error.message || 'Failed to login with Google. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-  const handleError = () => {
-    console.log("Login Failed");
-    setError('Google login failed. Please try again.');
   };
 
   return (
@@ -103,29 +104,26 @@ function Login() {
           <>
             <h2>Welcome Back 👋</h2>
             <p>Login with Google to continue</p>
-            
             {error && (
-              <div className="error-message" style={{ 
-                color: '#f44336', 
-                marginBottom: '15px', 
-                padding: '10px', 
-                backgroundColor: '#ffebee', 
+              <div className="error-message" style={{
+                color: '#f44336',
+                marginBottom: '15px',
+                padding: '10px',
+                backgroundColor: '#ffebee',
                 borderRadius: '5px',
                 fontSize: '14px'
               }}>
                 {error}
               </div>
             )}
-
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={handleError}
+              onError={() => setError('Google login failed. Please try again.')}
               theme="outline"
               size="large"
               shape="pill"
               disabled={loading}
             />
-            
             {loading && (
               <div className="loading-message" style={{
                 marginTop: '15px',
