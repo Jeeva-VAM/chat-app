@@ -1,0 +1,18 @@
+// Action Types
+export const SEND_MESSAGE_REQUEST = "SEND_MESSAGE_REQUEST";
+export const SEND_MESSAGE_SUCCESS = "SEND_MESSAGE_SUCCESS";
+export const SEND_MESSAGE_FAILURE = "SEND_MESSAGE_FAILURE";
+
+export const FETCH_MESSAGES_REQUEST = "FETCH_MESSAGES_REQUEST";
+export const FETCH_MESSAGES_SUCCESS = "FETCH_MESSAGES_SUCCESS";
+
+// Action Creators
+export const sendMessageRequest = (payload) => ({
+  type: SEND_MESSAGE_REQUEST,
+  payload
+});
+
+export const fetchMessagesRequest = (chatId) => ({
+  type: FETCH_MESSAGES_REQUEST,
+  payload: chatId
+});
