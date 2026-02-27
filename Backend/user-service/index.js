@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 
 const userRoutes = require('./routes/users');
 const { connectRedis } = require('../shared/redis');
@@ -55,7 +55,7 @@ app.use('*', (req, res) => {
 const startServer = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/chat-users');
+    await mongoose.connect(process.env.MONGODB_URI_USER || 'mongodb://localhost:27017/chat-users');
     console.log('Connected to MongoDB (User Service)');
 
     // Connect to Redis

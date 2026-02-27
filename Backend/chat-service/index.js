@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 
 const chatRoutes = require('./routes/chat');
 const { connectRedis } = require('../shared/redis');
@@ -68,7 +68,7 @@ app.use('*', (req, res) => {
 const startServer = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/chat-messages');
+    await mongoose.connect(process.env.MONGODB_URI_CHAT || 'mongodb://localhost:27017/chat-messages');
     console.log('Connected to MongoDB (Chat Service)');
 
     // Connect to Redis

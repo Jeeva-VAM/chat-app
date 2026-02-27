@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const passport = require('passport');
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 
 const authRoutes = require('./routes/auth');
 const { connectRedis } = require('../shared/redis');
@@ -69,7 +69,7 @@ app.use('*', (req, res) => {
 const startServer = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/chat-auth');
+    await mongoose.connect(process.env.MONGODB_URI_AUTH || 'mongodb://localhost:27017/chat-auth');
     console.log('Connected to MongoDB (Auth Service)');
 
     // Connect to Redis

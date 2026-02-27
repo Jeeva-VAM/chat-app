@@ -28,7 +28,7 @@
     "node.js",
     "websocket",
     "mongodb",
-    "redis",
+    "redis-api",
     "kafka"
   ],
   "author": "Your Name",
