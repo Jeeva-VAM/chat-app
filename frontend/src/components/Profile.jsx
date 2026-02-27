@@ -1,28 +1,29 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/chat-profile.css";
+import apiService from "../services/api";
 
 function Profile() {
   const navigate = useNavigate();
 
   // Chat app profile state - OAuth + additional user data
-  const [user, setUser] = useState({
-    id: 1,
-    name: "",                      // From OAuth localStorage
-    email: "",                     // From OAuth localStorage
-    profileImage: "",              // From OAuth localStorage
-    bio: "",                       // User can add
+  // Profile state - loaded from MongoDB
+  const [profile, setProfile] = useState({
+    userId: "",
+    name: "",                      // From OAuth
+    email: "",                     // From OAuth 
+    profileImage: "",              // From OAuth (optional)
+    bio: "",                      // User can add
     status: "online",              // Online status for chat
     mood: "😊",                    // Chat mood emoji
-    theme: "light",               // Chat theme preference
     joinDate: "February 2026",
     lastSeen: new Date().toISOString(),
     chatStats: {
-      totalChats: 0,
-      totalMessages: 0,
+      totalChats: 42,
+      totalMessages: 1337,
       favoriteEmoji: "😄"
     },
-    interests: [],                 // Chat interests/topics
+    interests: ["Music", "Gaming", "Technology", "Movies"],
     preferences: {
       notifications: {
         sound: true,
@@ -37,58 +38,134 @@ function Profile() {
       },
       chatSettings: {
         fontSize: "medium",
-        enterToSend: true,
-        darkMode: false
+        darkMode: false,
+        enterToSend: true
       }
     }
   });
-
+  
+  // Original profile for tracking changes
+  const [originalProfile, setOriginalProfile] = useState({});
+  
+  // UI States
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUser, setEditedUser] = useState(user);
+  const [isModified, setIsModified] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Load OAuth data and fetch additional profile data
+  // Load user profile data from backend API
   useEffect(() => {
-    loadOAuthData();
-    fetchProfile();
+    loadUserProfile();
   }, []);
 
-  const loadOAuthData = () => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const oauthData = JSON.parse(storedUser);
-        setUser(prevUser => ({
-          ...prevUser,
-          name: oauthData.name || prevUser.name,
-          email: oauthData.email || prevUser.email,
-          profileImage: oauthData.picture || prevUser.profileImage
-        }));
-        setEditedUser(prevUser => ({
-          ...prevUser,
-          name: oauthData.name || prevUser.name,
-          email: oauthData.email || prevUser.email,
-          profileImage: oauthData.picture || prevUser.profileImage
-        }));
-      }
-    } catch (error) {
-      console.error('Failed to load OAuth data:', error);
-    }
-  };
-
-  const fetchProfile = async () => {
+  const loadUserProfile = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/profiles/1');
-      if (response.ok) {
-        const profileData = await response.json();
-        setUser(profileData);
-        setEditedUser(profileData);
+      
+      // Get OAuth data from localStorage
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) {
+        navigate('/');
+        return;
+      }
+      
+      const oauthData = JSON.parse(storedUser);
+      
+      // Try to fetch complete profile from MongoDB
+      try {
+        const response = await apiService.getUserProfile(oauthData.sub);
+        
+        if (response.profile) {
+          // Profile exists in MongoDB - merge with defaults
+          const dbProfile = response.profile;
+          const loadedProfile = {
+            userId: dbProfile.userId,
+            name: dbProfile.name,
+            email: dbProfile.email,
+            profileImage: dbProfile.profileImage || '',
+            bio: dbProfile.bio || '',
+            status: dbProfile.status || 'online',
+            mood: dbProfile.mood || '😊',
+            joinDate: dbProfile.joinDate || 'February 2026',
+            lastSeen: dbProfile.lastSeen || new Date().toISOString(),
+            chatStats: dbProfile.chatStats || {
+              totalChats: 0,
+              totalMessages: 0,
+              favoriteEmoji: '😄'
+            },
+            interests: dbProfile.interests || [],
+            preferences: dbProfile.preferences || {
+              notifications: { sound: true, desktop: true, vibration: true },
+              privacy: { showLastSeen: true, showProfileImage: true, allowMessagesFromStrangers: true, readReceipts: true },
+              chatSettings: { fontSize: 'medium', darkMode: false, enterToSend: true }
+            }
+          };
+          
+          setProfile(loadedProfile);
+          setOriginalProfile({ ...loadedProfile });
+          console.log('Profile loaded from MongoDB:', loadedProfile);
+        } else {
+          // No profile in MongoDB - create from OAuth data with defaults
+          const newProfile = {
+            userId: oauthData.sub,
+            name: oauthData.name,
+            email: oauthData.email,
+            profileImage: oauthData.picture || '',
+            bio: '',
+            status: 'online',
+            mood: '😊',
+            joinDate: 'February 2026',
+            lastSeen: new Date().toISOString(),
+            chatStats: {
+              totalChats: 0,
+              totalMessages: 0,
+              favoriteEmoji: '😄'
+            },
+            interests: [],
+            preferences: {
+              notifications: { sound: true, desktop: true, vibration: true },
+              privacy: { showLastSeen: true, showProfileImage: true, allowMessagesFromStrangers: true, readReceipts: true },
+              chatSettings: { fontSize: 'medium', darkMode: false, enterToSend: true }
+            }
+          };
+          
+          setProfile(newProfile);
+          setOriginalProfile({ ...newProfile });
+          console.log('Created new profile from OAuth:', newProfile);
+        }
+      } catch (apiError) {
+        console.warn('MongoDB profile fetch failed, using OAuth data only:', apiError);
+        
+        // Fallback to OAuth data if database fetch fails
+        const fallbackProfile = {
+          userId: oauthData.sub,
+          name: oauthData.name,
+          email: oauthData.email,
+          profileImage: oauthData.picture || '',
+          bio: '',
+          status: 'online',
+          mood: '😊',
+          joinDate: 'February 2026',
+          lastSeen: new Date().toISOString(),
+          chatStats: {
+            totalChats: 0,
+            totalMessages: 0,
+            favoriteEmoji: '😄'
+          },
+          interests: [],
+          preferences: {
+            notifications: { sound: true, desktop: true, vibration: true },
+            privacy: { showLastSeen: true, showProfileImage: true, allowMessagesFromStrangers: true, readReceipts: true },
+            chatSettings: { fontSize: 'medium', darkMode: false, enterToSend: true }
+          }
+        };
+        
+        setProfile(fallbackProfile);
+        setOriginalProfile({ ...fallbackProfile });
       }
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      // Use default data if server is not running
+      console.error('Failed to load profile:', error);
+      setErrors({ general: 'Failed to load profile data' });
     } finally {
       setLoading(false);
     }
@@ -96,49 +173,52 @@ function Profile() {
 
   const updateProfile = async (updatedData) => {
     try {
-      const response = await fetch('http://localhost:3001/profiles/1', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData)
-      });
+      console.log('Updating profile:', updatedData);
       
-      if (response.ok) {
-        const updatedProfile = await response.json();
-        setUser(updatedProfile);
+      // Update profile in MongoDB
+      const response = await apiService.updateUserProfile(updatedData.userId, updatedData);
+      
+      if (response.success && response.profile) {
+        console.log('Profile updated in MongoDB:', response.profile);
+        
+        // Update local state with response
+        setProfile(response.profile);
+        setOriginalProfile({ ...response.profile });
+        return true;
+      } else {
+        console.warn('Profile update response not successful:', response);
+        // Fallback to local state update
+        setProfile(updatedData);
+        setOriginalProfile({ ...updatedData });
         return true;
       }
-      return false;
     } catch (error) {
-      console.error('Failed to update profile:', error);
-      // Fallback to local state update if server is not running
-      setUser(updatedData);
+      console.error('Failed to update profile in MongoDB:', error);
+      // Fallback to local state update if API fails
+      setProfile(updatedData);
+      setOriginalProfile({ ...updatedData });
       return true;
     }
-  };
-
-  // Helper function to check if profile is complete
-  const getProfileCompleteness = () => {
-    const fields = ['bio', 'headline', 'location'];
-    const filledFields = fields.filter(field => user[field]?.trim());
-    const hasExperience = user.experience?.length > 0;
-    const hasSkills = user.skills?.length > 0;
-    
-    let totalFields = fields.length;
-    let completedFields = filledFields.length;
-    
-    if (hasExperience) completedFields++;
-    if (hasSkills) completedFields++;
-    totalFields += 2; // experience and skills
-    
-    return Math.round((completedFields / totalFields) * 100);
   };
 
   // Helper function to format connections count
   const formatCount = (count) => {
     if (count >= 500) return '500+';
     return count.toString();
+  };
+
+  // Helper function to check if profile is complete
+  const getProfileCompleteness = () => {
+    const fields = ['bio'];
+    const filledFields = fields.filter(field => profile[field]?.trim());
+    const hasInterests = profile.interests?.length > 0;
+    
+    let totalFields = fields.length + 1; // bio + interests
+    let completedFields = filledFields.length;
+    
+    if (hasInterests) completedFields++;
+    
+    return Math.round((completedFields / totalFields) * 100);
   };
 
   //  Validation Function
@@ -159,12 +239,8 @@ function Profile() {
       }
     }
 
-    if (name === "bio" && value.length > 2600) {
-      error = "Bio cannot exceed 2600 characters (LinkedIn limit)";
-    }
-
-    if (name === "headline" && value.length > 220) {
-      error = "Headline cannot exceed 220 characters (LinkedIn limit)";
+    if (name === "bio" && value.length > 500) {
+      error = "Bio cannot exceed 500 characters";
     }
 
     if (name === "profileImage" && value.trim()) {
@@ -181,10 +257,10 @@ function Profile() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Handle nested properties like preferences.theme
+    // Handle nested properties like preferences.notifications.sound
     if (name.includes('.')) {
       const keys = name.split('.');
-      setEditedUser(prev => {
+      setProfile(prev => {
         const updated = { ...prev };
         let current = updated;
         
@@ -199,17 +275,27 @@ function Profile() {
         return updated;
       });
     } else {
-      setEditedUser({
-        ...editedUser,
-        [name]: value
-      });
+      // Update profile data
+      setProfile({ ...profile, [name]: value });
     }
 
+    // Validate field
     const error = validate(name, value);
-    setErrors({
-      ...errors,
-      [name]: error
-    });
+    setErrors({ ...errors, [name]: error });
+
+    // Mark as modified if value changed from original
+    if (profile[name] !== value) {
+      setIsModified(true);
+    }
+
+    // Check if all changes are reverted
+    if (originalProfile[name] === value) {
+      const tempProfile = { ...profile, [name]: value };
+      const isProfileUnchanged = Object.keys(tempProfile).every(
+        key => tempProfile[key] === originalProfile[key]
+      );
+      setIsModified(!isProfileUnchanged);
+    }
   };
 
   const handleSave = async () => {
@@ -219,15 +305,15 @@ function Profile() {
     const requiredFields = ['name', 'email'];
     
     requiredFields.forEach((key) => {
-      const error = validate(key, editedUser[key]);
+      const error = validate(key, profile[key]);
       if (error) newErrors[key] = error;
     });
 
     // Validate optional fields only if they have content
-    const optionalFields = ['bio', 'headline', 'profileImage'];
+    const optionalFields = ['bio', 'profileImage'];
     optionalFields.forEach((key) => {
-      if (editedUser[key]?.trim()) {
-        const error = validate(key, editedUser[key]);
+      if (profile[key]?.trim()) {
+        const error = validate(key, profile[key]);
         if (error) newErrors[key] = error;
       }
     });
@@ -235,9 +321,22 @@ function Profile() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      const success = await updateProfile(editedUser);
-      if (success) {
-        setIsEditing(false);
+      try {
+        setLoading(true);
+        const success = await updateProfile(profile);
+        if (success) {
+          setIsEditing(false);
+          setIsModified(false);
+          setOriginalProfile({ ...profile });
+          console.log('Profile saved successfully to MongoDB!');
+        } else {
+          setErrors({ general: 'Failed to save profile changes' });
+        }
+      } catch (error) {
+        console.error('Save profile error:', error);
+        setErrors({ general: 'An error occurred while saving' });
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -271,23 +370,23 @@ function Profile() {
           <div className="profile-photo-section">
             <div className="profile-photo-container">
               <img 
-                src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=667eea&color=fff&size=200`} 
+                src={profile.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=667eea&color=fff&size=200`} 
                 alt="Profile" 
                 className="profile-photo"
               />
-              <div className={`status-indicator ${user.status}`}></div>
+              <div className={`status-indicator ${profile.status}`}></div>
             </div>
           </div>
           
           <div className="profile-info">
-            <h1 className="profile-name">{user.name} {user.mood}</h1>
+            <h1 className="profile-name">{profile.name} {profile.mood}</h1>
             <p className="profile-status">
-              <span className={`status-dot ${user.status}`}></span>
-              {user.status === 'online' ? 'Online now' : `Last seen ${new Date(user.lastSeen).toLocaleString()}`}
+              <span className={`status-dot ${profile.status}`}></span>
+              {profile.status === 'online' ? 'Online now' : `Last seen ${new Date(profile.lastSeen).toLocaleString()}`}
             </p>
             
-            {user.bio ? (
-              <p className="profile-bio">{user.bio}</p>
+            {profile.bio ? (
+              <p className="profile-bio">{profile.bio}</p>
             ) : (
               <button className="add-bio-btn" onClick={() => setIsEditing(true)}>
                 Add a bio to tell others about yourself 💭
@@ -316,15 +415,15 @@ function Profile() {
           <div className="section-content">
             <div className="stats-grid">
               <div className="stat-card">
-                <div className="stat-number">{formatCount(user.chatStats.totalChats)}</div>
+                <div className="stat-number">{formatCount(profile.chatStats.totalChats)}</div>
                 <div className="stat-label">Total Chats</div>
               </div>
               <div className="stat-card">
-                <div className="stat-number">{formatCount(user.chatStats.totalMessages)}</div>
+                <div className="stat-number">{formatCount(profile.chatStats.totalMessages)}</div>
                 <div className="stat-label">Messages Sent</div>
               </div>
               <div className="stat-card">
-                <div className="stat-emoji">{user.chatStats.favoriteEmoji}</div>
+                <div className="stat-emoji">{profile.chatStats.favoriteEmoji}</div>
                 <div className="stat-label">Favorite Emoji</div>
               </div>
             </div>
@@ -343,10 +442,10 @@ function Profile() {
             </button>
           </div>
           
-          {user.interests && user.interests.length > 0 ? (
+          {profile.interests && profile.interests.length > 0 ? (
             <div className="section-content">
               <div className="interests-grid">
-                {user.interests.map((interest, index) => (
+                {profile.interests.map((interest, index) => (
                   <div key={index} className="interest-tag">
                     {interest}
                   </div>
@@ -372,19 +471,19 @@ function Profile() {
             <div className="preferences-grid">
               <div className="pref-item">
                 <span className="pref-label">🔔 Notifications</span>
-                <span className="pref-value">{user.preferences.notifications.sound ? 'On' : 'Off'}</span>
+                <span className="pref-value">{profile.preferences.notifications.sound ? 'On' : 'Off'}</span>
               </div>
               <div className="pref-item">
                 <span className="pref-label">👁️ Read Receipts</span>
-                <span className="pref-value">{user.preferences.privacy.readReceipts ? 'On' : 'Off'}</span>
+                <span className="pref-value">{profile.preferences.privacy.readReceipts ? 'On' : 'Off'}</span>
               </div>
               <div className="pref-item">
                 <span className="pref-label">🌙 Theme</span>
-                <span className="pref-value">{user.preferences.chatSettings.darkMode ? 'Dark' : 'Light'}</span>
+                <span className="pref-value">{profile.preferences.chatSettings.darkMode ? 'Dark' : 'Light'}</span>
               </div>
               <div className="pref-item">
                 <span className="pref-label">📱 Text Size</span>
-                <span className="pref-value">{user.preferences.chatSettings.fontSize || 'Medium'}</span>
+                <span className="pref-value">{profile.preferences.chatSettings.fontSize || 'Medium'}</span>
               </div>
             </div>
             <button className="edit-settings-btn" onClick={() => setIsEditing(true)}>
@@ -392,6 +491,7 @@ function Profile() {
             </button>
           </div>
         </div>
+      </div>
 
         {/* Activity Timeline */}
         <div className="chat-section">
@@ -411,7 +511,7 @@ function Profile() {
             </div>
           </div>
         </div>
-      </div>
+      {/* </div> */}
 
       {/* Edit Modal - Chat Style */}
       {isEditing && (
@@ -425,6 +525,20 @@ function Profile() {
             </div>
 
             <div className="modal-content">
+              {/* Error Display */}
+              {errors.general && (
+                <div className="error-general" style={{
+                  color: '#f44336',
+                  backgroundColor: '#ffebee',
+                  padding: '15px',
+                  borderRadius: '10px',
+                  marginBottom: '20px',
+                  fontSize: '14px'
+                }}>
+                  {errors.general}
+                </div>
+              )}
+              
               {/* Basic Info Section */}
               <div className="edit-section">
                 <h3>👤 Basic Information</h3>
@@ -433,7 +547,7 @@ function Profile() {
                     <label>Name *</label>
                     <input
                       name="name"
-                      value={editedUser.name}
+                      value={profile.name}
                       onChange={handleChange}
                       placeholder="Your display name"
                     />
@@ -441,15 +555,17 @@ function Profile() {
                   </div>
 
                   <div className="form-group">
-                    <label>Email *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={editedUser.email}
+                    <label>Status</label>
+                    <select
+                      name="status"
+                      value={profile.status || 'online'}
                       onChange={handleChange}
-                      placeholder="Your email address"
-                    />
-                    {errors.email && <span className="error">{errors.email}</span>}
+                    >
+                      <option value="online">🟢 Online</option>
+                      <option value="away">🟡 Away</option>
+                      <option value="busy">🔴 Busy</option>
+                      <option value="invisible">⚫ Invisible</option>
+                    </select>
                   </div>
                 </div>
 
@@ -457,7 +573,7 @@ function Profile() {
                   <label>Bio</label>
                   <textarea
                     name="bio"
-                    value={editedUser.bio || ''}
+                    value={profile.bio || ''}
                     onChange={handleChange}
                     placeholder="Tell others about yourself... 💭"
                     maxLength="500"
@@ -472,7 +588,7 @@ function Profile() {
                     <label>Mood</label>
                     <select
                       name="mood"
-                      value={editedUser.mood || '😊'}
+                      value={profile.mood || '😊'}
                       onChange={handleChange}
                     >
                       <option value="😊">😊 Happy</option>
@@ -487,17 +603,15 @@ function Profile() {
                   </div>
 
                   <div className="form-group">
-                    <label>Status</label>
-                    <select
-                      name="status"
-                      value={editedUser.status || 'online'}
+                    <label>Profile Image URL</label>
+                    <input
+                      name="profileImage"
+                      value={profile.profileImage || ''}
                       onChange={handleChange}
-                    >
-                      <option value="online">🟢 Online</option>
-                      <option value="away">🟡 Away</option>
-                      <option value="busy">🔴 Busy</option>
-                      <option value="invisible">⚫ Invisible</option>
-                    </select>
+                      placeholder="https://example.com/your-photo.jpg"
+                    />
+                    {errors.profileImage && <span className="error">{errors.profileImage}</span>}
+                    <small>Enter a URL for your profile picture</small>
                   </div>
                 </div>
               </div>
@@ -512,7 +626,7 @@ function Profile() {
                       <input
                         type="checkbox"
                         name="preferences.notifications.sound"
-                        checked={editedUser.preferences?.notifications?.sound || false}
+                        checked={profile.preferences?.notifications?.sound || false}
                         onChange={(e) => handleChange({
                           target: {
                             name: 'preferences.notifications.sound',
@@ -529,7 +643,7 @@ function Profile() {
                       <input
                         type="checkbox"
                         name="preferences.privacy.readReceipts"
-                        checked={editedUser.preferences?.privacy?.readReceipts || false}
+                        checked={profile.preferences?.privacy?.readReceipts || false}
                         onChange={(e) => handleChange({
                           target: {
                             name: 'preferences.privacy.readReceipts',
@@ -548,7 +662,7 @@ function Profile() {
                       <input
                         type="checkbox"
                         name="preferences.chatSettings.darkMode"
-                        checked={editedUser.preferences?.chatSettings?.darkMode || false}
+                        checked={profile.preferences?.chatSettings?.darkMode || false}
                         onChange={(e) => handleChange({
                           target: {
                             name: 'preferences.chatSettings.darkMode',
@@ -564,7 +678,7 @@ function Profile() {
                     <label>Text Size</label>
                     <select
                       name="preferences.chatSettings.fontSize"
-                      value={editedUser.preferences?.chatSettings?.fontSize || 'medium'}
+                      value={profile.preferences?.chatSettings?.fontSize || 'medium'}
                       onChange={handleChange}
                     >
                       <option value="small">Small</option>
@@ -582,10 +696,10 @@ function Profile() {
                   <label>Add your interests (comma-separated)</label>
                   <input
                     name="interests"
-                    value={editedUser.interests?.join(', ') || ''}
+                    value={profile.interests?.join(', ') || ''}
                     onChange={(e) => {
                       const interests = e.target.value.split(',').map(item => item.trim()).filter(item => item);
-                      setEditedUser(prev => ({ ...prev, interests }));
+                      setProfile(prev => ({ ...prev, interests }));
                     }}
                     placeholder="Music, Sports, Technology, Gaming..."
                   />
