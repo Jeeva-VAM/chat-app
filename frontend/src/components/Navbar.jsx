@@ -8,10 +8,10 @@ function Navbar() {
   const menuRef = useRef();
   const navigate = useNavigate();
 
-const [user,] = useState(() => {
-  const storedUser = localStorage.getItem("user");
-  return storedUser ? JSON.parse(storedUser) : null;
-});
+  const [user] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -37,9 +37,9 @@ const [user,] = useState(() => {
       <div className="nav-left">
         <h1 className="logo">Chat App</h1>
         <div className="search-box">
-  <FaSearch className="search-icon" />
-  <input type="text" placeholder="Search messages..." />
-</div>
+          <FaSearch className="search-icon" />
+          <input type="text" placeholder="Search messages..." />
+        </div>
       </div>
 
       <div className="nav-right">
@@ -58,7 +58,12 @@ const [user,] = useState(() => {
 
             {openMenu && (
               <div className="dropdown-menu">
-                <div className="dropdown-item" onClick={() => navigate("/profile")}>Edit Profile</div>
+                <div
+                  className="dropdown-item"
+                  onClick={() => navigate("/profile")}
+                >
+                  Edit Profile
+                </div>
                 <div className="dropdown-item logout" onClick={handleLogout}>
                   Logout
                 </div>
