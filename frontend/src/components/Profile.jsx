@@ -355,11 +355,7 @@ function Profile() {
 
   return (
     <div className="chat-profile">
-      {/* Back Button */}
-      <button onClick={handleBack} className="back-button">
-        ← Back
-      </button>
-
+    
       {/* Chat Profile Header */}
       <div className="profile-header">
         <div className="cover-section">
@@ -367,6 +363,11 @@ function Profile() {
         </div>
         
         <div className="profile-main-header">
+          {/* Back Button */}
+          <button onClick={handleBack} className="back-button">
+            ← Back
+          </button>
+          
           <div className="profile-photo-section">
             <div className="profile-photo-container">
               <img 
@@ -405,113 +406,120 @@ function Profile() {
         </div>
       </div>
 
-      {/* Main Content - Chat Sections */}
-      <div className="chat-content">
-        {/* Chat Stats Section */}
-        <div className="chat-section">
-          <div className="section-header">
-            <h2>📊 Chat Stats</h2>
-          </div>
-          <div className="section-content">
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-number">{formatCount(profile.chatStats.totalChats)}</div>
-                <div className="stat-label">Total Chats</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">{formatCount(profile.chatStats.totalMessages)}</div>
-                <div className="stat-label">Messages Sent</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-emoji">{profile.chatStats.favoriteEmoji}</div>
-                <div className="stat-label">Favorite Emoji</div>
-              </div>
+      {/* Main Content - Grid Layout */}
+      <div className="sections-grid">
+        {/* Row 1: Chat Stats and Interests */}
+        <div className="section-row">
+        {/* Row 1: Chat Stats and Interests */}
+        <div className="section-row">
+          {/* Chat Stats Section */}
+          <div className="chat-section">
+            <div className="section-header">
+              <h2>📊 Chat Stats</h2>
             </div>
-          </div>
-        </div>
-
-        {/* Interests Section */}
-        <div className="chat-section">
-          <div className="section-header">
-            <h2>💫 Interests</h2>
-            <button 
-              className="add-section-btn"
-              onClick={() => setIsEditing(true)}
-            >
-              +
-            </button>
-          </div>
-          
-          {profile.interests && profile.interests.length > 0 ? (
             <div className="section-content">
-              <div className="interests-grid">
-                {profile.interests.map((interest, index) => (
-                  <div key={index} className="interest-tag">
-                    {interest}
-                  </div>
-                ))}
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-number">{formatCount(profile.chatStats.totalChats)}</div>
+                  <div className="stat-label">Total Chats</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-number">{formatCount(profile.chatStats.totalMessages)}</div>
+                  <div className="stat-label">Messages Sent</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-emoji">{profile.chatStats.favoriteEmoji}</div>
+                  <div className="stat-label">Favorite Emoji</div>
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="empty-section">
-              <p>Add your interests to connect with like-minded people 🌟</p>
-              <button className="add-content-button" onClick={() => setIsEditing(true)}>
-                Add interests
+          </div>
+
+          {/* Interests Section */}
+          <div className="chat-section">
+            <div className="section-header">
+              <h2>💫 Interests</h2>
+              <button 
+                className="add-section-btn"
+                onClick={() => setIsEditing(true)}
+              >
+                +
               </button>
             </div>
-          )}
+            
+            {profile.interests && profile.interests.length > 0 ? (
+              <div className="section-content">
+                <div className="interests-grid">
+                  {profile.interests.map((interest, index) => (
+                    <div key={index} className="interest-tag">
+                      {interest}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="empty-section">
+                <p>Add your interests to connect with like-minded people 🌟</p>
+                <button className="add-content-button" onClick={() => setIsEditing(true)}>
+                  Add interests
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Preferences Section */}
-        <div className="chat-section">
-          <div className="section-header">
-            <h2>⚙️ Chat Settings</h2>
+        {/* Row 2: Chat Settings and Recent Activity */}
+        <div className="section-row">
+          {/* Preferences Section */}
+          <div className="chat-section">
+            <div className="section-header">
+              <h2>⚙️ Chat Settings</h2>
+            </div>
+            <div className="section-content">
+              <div className="preferences-grid">
+                <div className="pref-item">
+                  <span className="pref-label">🔔 Notifications</span>
+                  <span className="pref-value">{profile.preferences.notifications.sound ? 'On' : 'Off'}</span>
+                </div>
+                <div className="pref-item">
+                  <span className="pref-label">👁️ Read Receipts</span>
+                  <span className="pref-value">{profile.preferences.privacy.readReceipts ? 'On' : 'Off'}</span>
+                </div>
+                <div className="pref-item">
+                  <span className="pref-label">🌙 Theme</span>
+                  <span className="pref-value">{profile.preferences.chatSettings.darkMode ? 'Dark' : 'Light'}</span>
+                </div>
+                <div className="pref-item">
+                  <span className="pref-label">📱 Text Size</span>
+                  <span className="pref-value">{profile.preferences.chatSettings.fontSize || 'Medium'}</span>
+                </div>
+              </div>
+              <button className="edit-settings-btn" onClick={() => setIsEditing(true)}>
+                Edit Settings
+              </button>
+            </div>
           </div>
-          <div className="section-content">
-            <div className="preferences-grid">
-              <div className="pref-item">
-                <span className="pref-label">🔔 Notifications</span>
-                <span className="pref-value">{profile.preferences.notifications.sound ? 'On' : 'Off'}</span>
-              </div>
-              <div className="pref-item">
-                <span className="pref-label">👁️ Read Receipts</span>
-                <span className="pref-value">{profile.preferences.privacy.readReceipts ? 'On' : 'Off'}</span>
-              </div>
-              <div className="pref-item">
-                <span className="pref-label">🌙 Theme</span>
-                <span className="pref-value">{profile.preferences.chatSettings.darkMode ? 'Dark' : 'Light'}</span>
-              </div>
-              <div className="pref-item">
-                <span className="pref-label">📱 Text Size</span>
-                <span className="pref-value">{profile.preferences.chatSettings.fontSize || 'Medium'}</span>
+
+          {/* Activity Timeline */}
+          <div className="chat-section">
+            <div className="section-header">
+              <h2>🕒 Recent Activity</h2>
+            </div>
+            <div className="section-content">
+              <div className="activity-timeline">
+                <div className="activity-item">
+                  <div className="activity-time">2 hours ago</div>
+                  <div className="activity-desc">Updated profile photo</div>
+                </div>
+                <div className="activity-item">
+                  <div className="activity-time">Yesterday</div>
+                  <div className="activity-desc">Joined the app</div>
+                </div>
               </div>
             </div>
-            <button className="edit-settings-btn" onClick={() => setIsEditing(true)}>
-              Edit Settings
-            </button>
           </div>
         </div>
       </div>
-
-        {/* Activity Timeline */}
-        <div className="chat-section">
-          <div className="section-header">
-            <h2>🕒 Recent Activity</h2>
-          </div>
-          <div className="section-content">
-            <div className="activity-timeline">
-              <div className="activity-item">
-                <div className="activity-time">2 hours ago</div>
-                <div className="activity-desc">Updated profile photo</div>
-              </div>
-              <div className="activity-item">
-                <div className="activity-time">Yesterday</div>
-                <div className="activity-desc">Joined the app</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      {/* </div> */}
 
       {/* Edit Modal - Chat Style */}
       {isEditing && (
@@ -726,6 +734,7 @@ function Profile() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
