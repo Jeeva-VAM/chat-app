@@ -2,20 +2,22 @@ import { configureStore } from "@reduxjs/toolkit";
 import createSagaMiddleware from "redux-saga";
 import messageReducer from "./reducers/messageReducer";
 import rootSaga from "./rootSaga";
+import suggestionReducer from "../features/slice/suggestionSlice";
 
-// 1️⃣ Create Saga Middleware
+
 const sagaMiddleware = createSagaMiddleware();
 
-// 2️⃣ Create Store
+
 const store = configureStore({
   reducer: {
     message: messageReducer,
+    suggestions: suggestionReducer,  
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),
 });
 
-// 3️⃣ Run Saga
+
 sagaMiddleware.run(rootSaga);
 
 export default store;

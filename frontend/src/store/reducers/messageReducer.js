@@ -1,42 +1,21 @@
 const initialState = {
-    messagesByChat: {},
-    loading: false,
-    error: null
-  };
-  
-  export default function messageReducer(state = initialState, action) {
-    switch (action.type) {
-      case "SEND_MESSAGE_REQUEST":
-      case "FETCH_MESSAGES_REQUEST":
-        return { ...state, loading: true };
-  
-      case "FETCH_MESSAGES_SUCCESS":
-        return {
-          ...state,
-          loading: false,
-          messagesByChat: {
-            ...state.messagesByChat,
-            [action.chatId]: action.payload
-          }
-        };
-  
-        case "SEND_MESSAGE_SUCCESS": {
-            const { chatId, message } = action.payload;
-          
-            return {
-              ...state,
-              loading: false,
-              messagesByChat: {
-                ...state.messagesByChat,
-                [chatId]: [
-                  ...(state.messagesByChat[chatId] || []),
-                  message
-                ]
-              }
-            };
-          }
-  
-      default:
-        return state;
-    }
+  users: [],
+  loading: false,
+  error: null
+};
+
+export default function usersReducer(state = initialState, action) {
+  switch (action.type) {
+    case "FETCH_USERS_REQUEST":
+      return { ...state, loading: true };
+
+    case "FETCH_USERS_SUCCESS":
+      return { ...state, loading: false, users: action.payload };
+
+    case "FETCH_USERS_FAILURE":
+      return { ...state, loading: false, error: action.payload };
+
+    default:
+      return state;
   }
+}
