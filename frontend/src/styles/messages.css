@@ -1,0 +1,221 @@
+/* ===== Layout ===== */
+
+.message-container {
+    display: flex;
+    height: 100vh;
+    background: #f4f6fb;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* ===== Sidebar ===== */
+  
+  .sidebar {
+    width: 28%;
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 20px 15px;
+    overflow-y: auto;
+  }
+  
+  .sidebar-title {
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  /* ===== User List Item ===== */
+  
+  .user-item {
+    padding: 12px 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+  }
+  
+  .user-item:hover {
+    background: #f5f7fb;
+  }
+  
+  .user-item.active {
+    background: #e6f0ff;
+    font-weight: 500;
+  }
+  
+  /* ===== Unread Badge ===== */
+  
+  .unread-badge {
+    background: #25d366;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 50%;
+    font-size: 12px;
+    min-width: 22px;
+    text-align: center;
+  }
+  
+  /* ===== Chat Window ===== */
+  
+  .chat-window {
+    width: 72%;
+    display: flex;
+    flex-direction: column;
+    background: #f7f9fc;
+  }
+  
+  /* ===== Chat Header ===== */
+  
+  .chat-header {
+    display: flex;
+    justify-content: space-between;  /* pushes title left, button right */
+    align-items: center;
+    padding: 15px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  /* ===== Chat Body ===== */
+  
+  .chat-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  /* ===== Message Bubbles ===== */
+  
+  .message {
+    max-width: 65%;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    border-radius: 18px;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+  }
+  
+  /* My Message */
+  
+  .my-message {
+    background: #d9fdd3;
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+  }
+  
+  /* Their Message */
+  
+  .their-message {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    margin-right: auto;
+    border-bottom-left-radius: 5px;
+  }
+  
+  /* ===== Seen Status ===== */
+  
+  .seen-status {
+    font-size: 10px;
+    display: block;
+    margin-top: 5px;
+    text-align: right;
+    color: #666;
+  }
+  
+  /* ===== Reaction Button (Hidden by default) ===== */
+  
+  .react-btn {
+    position: absolute;
+    right: -28px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    padding: 4px 6px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    font-size: 14px;
+  }
+  
+  /* Show reaction on hover */
+  
+  .message:hover .react-btn {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  /* ===== Reaction Display ===== */
+  
+  .reaction {
+    font-size: 14px;
+    margin-left: 5px;
+  }
+  
+  /* ===== Chat Input ===== */
+  
+  .chat-input {
+    display: flex;
+    padding: 12px 15px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .chat-input input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    outline: none;
+    font-size: 14px;
+  }
+  
+  .chat-input input:focus {
+    border-color: #25d366;
+  }
+  
+  .chat-input button {
+    margin-left: 10px;
+    padding: 10px 18px;
+    border: none;
+    background: #25d366;
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .chat-input button:hover {
+    background: #1ebe5d;
+  }
+  
+  /* ===== Back Button ===== */
+  
+  .back-btn {
+    background: #f3f4f6;
+    border: solid grey;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .back-btn:hover {
+    background: #e5e7eb;
+  }
+  
+  /* ===== Empty State ===== */
+  
+  .empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+    font-size: 16px;
+  }
