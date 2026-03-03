@@ -14,10 +14,8 @@ function SuggestionsRow() {
     dispatch(loadMoreRequest());
   }, [dispatch]);
 
-  const users = useSelector(
-    (state) => state.suggestions.users
-  );
-
+  const users = useSelector((state) => state.suggestions.users || []);
+  
   useEffect(() => {
       const el = scrollRef.current;
       if (!el) return;
