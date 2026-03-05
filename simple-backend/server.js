@@ -13,6 +13,7 @@ let profiles;
 let messages;
 let conversations;
 
+console.log(MONGODB_URI)
 // Middleware
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5175'],
@@ -140,14 +141,26 @@ app.get('/api/profiles', async (req, res) => {
     
     let query = {};
     
+    // Exclude specific user ID (for hiding current user from suggestions)
+    if (exclude) {
+      query.userId = { $ne: exclude };
+    }
+    
     // Add search functionality
     if (search) {
-      query = {
+      const searchQuery = {
         $or: [
           { name: { $regex: search, $options: 'i' } },
           { email: { $regex: search, $options: 'i' } }
         ]
       };
+      
+      // Combine exclude and search queries
+      if (query.userId) {
+        query = { $and: [{ userId: query.userId }, searchQuery] };
+      } else {
+        query = searchQuery;
+      }
     }
 
     console.log('🔍 Profiles API query:', query);
