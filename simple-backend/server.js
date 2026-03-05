@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://razakdev07_db_user:drvve6iPq8sKjUls@cluster0.yymd2cc.mongodb.net/chat-users?retryWrites=true&w=majority&appName=Cluster0';
 let db;
 let profiles;
-
+console.log(MONGODB_URI)
 // Middleware
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -131,19 +131,31 @@ app.patch('/api/profile/:userId', async (req, res) => {
 // Get all profiles (for suggestions)
 app.get('/api/profiles', async (req, res) => {
   try {
-    const { page = 1, limit = 20, search } = req.query;
+    const { page = 1, limit = 20, search, exclude } = req.query;
     const skip = (page - 1) * limit;
     
     let query = {};
     
+    // Exclude specific user ID (for hiding current user from suggestions)
+    if (exclude) {
+      query.userId = { $ne: exclude };
+    }
+    
     // Add search functionality
     if (search) {
-      query = {
+      const searchQuery = {
         $or: [
           { name: { $regex: search, $options: 'i' } },
           { email: { $regex: search, $options: 'i' } }
         ]
       };
+      
+      // Combine exclude and search queries
+      if (query.userId) {
+        query = { $and: [{ userId: query.userId }, searchQuery] };
+      } else {
+        query = searchQuery;
+      }
     }
     
     const profilesList = await profiles
