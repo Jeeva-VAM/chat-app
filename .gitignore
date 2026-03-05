@@ -229,6 +229,7 @@ frontend/dist/
 frontend/src/styles/linkedin-profile.css
 frontend/src/styles/profile.css
 frontend/src/components/Profile_old.jsx
+<<<<<<< HEAD
 
 # Backend environment files (all variations)
 Backend/.env*
@@ -239,3 +240,5 @@ simple-backend/.env*
 **/*oauth*
 **/*client-secret*
 **/*api-key*
+=======
+>>>>>>> de2d1445457b7e3cd6011c704ed411abc3eadc47

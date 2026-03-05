@@ -1,0 +1,43 @@
+{
+  "name": "chat-app-backend",
+  "version": "1.0.0",
+  "description": "Microservices backend for chat application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:auth\" \"npm run dev:user\" \"npm run dev:chat\" \"npm run dev:media\" \"npm run dev:gateway\"",
+    "dev:auth": "cd auth-service && npm run dev",
+    "dev:user": "cd user-service && npm run dev",
+    "dev:chat": "cd chat-service && npm run dev",
+    "dev:media": "cd media-service && npm run dev",
+    "dev:gateway": "cd api-gateway && npm run dev",
+    "install:all": "npm install && cd auth-service && npm install && cd ../user-service && npm install && cd ../chat-service && npm install && cd ../media-service && npm install && cd ../api-gateway && npm install",
+    "build": "cd auth-service && npm run build && cd ../user-service && npm run build && cd ../chat-service && npm run build && cd ../media-service && npm run build && cd ../api-gateway && npm run build",
+    "start": "concurrently \"npm run start:auth\" \"npm run start:user\" \"npm run start:chat\" \"npm run start:media\" \"npm run start:gateway\"",
+    "start:auth": "cd auth-service && npm start",
+    "start:user": "cd user-service && npm start",
+    "start:chat": "cd chat-service && npm start",
+    "start:media": "cd media-service && npm start",
+    "start:gateway": "cd api-gateway && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "chat",
+    "microservices",
+    "node.js",
+    "websocket",
+    "mongodb",
+    "redis",
+    "kafka"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3",
+    "kafkajs": "^2.2.4",
+    "lucide-react": "^0.575.0",
+    "nodemon": "^3.1.14",
+    "redis": "^5.11.0"
+  }
+}
