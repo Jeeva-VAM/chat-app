@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Debug Test</h1>
+    <button id="testHealth">Test Health Endpoint</button>
+    <button id="testProfiles">Test Profiles Endpoint</button>
+    <div id="results"></div>
+
+    <script type="module">
+        // Test the API endpoints directly
+        const API_BASE_URL = 'http://localhost:3001/api';
+        
+        function log(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += '<p>' + message + '</p>';
+        }
+        
+        async function testEndpoint(endpoint, name) {
+            log(`🔄 Testing ${name}: ${API_BASE_URL}${endpoint}`);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`);
+                log(`📡 Response status: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`❌ Error: ${errorText}`);
+                    return;
+                }
+                
+                const data = await response.json();
+                log(`✅ Success: ${JSON.stringify(data, null, 2)}`);
+                
+            } catch (error) {
+                log(`💥 Network Error: ${error.message}`);
+                console.error('Full error:', error);
+            }
+        }
+        
+        // Test non-API health endpoint
+        async function testHealthDirect() {
+            log(`🔄 Testing Health Direct: http://localhost:3001/health`);
+            
+            try {
+                const response = await fetch('http://localhost:3001/health');
+                log(`📡 Health Response status: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`❌ Health Error: ${errorText}`);
+                    return;
+                }
+                
+                const data = await response.json();
+                log(`✅ Health Success: ${JSON.stringify(data, null, 2)}`);
+                
+            } catch (error) {
+                log(`💥 Health Network Error: ${error.message}`);
+                console.error('Full health error:', error);
+            }
+        }
+        
+        document.getElementById('testHealth').addEventListener('click', () => {
+            testHealthDirect();
+            testEndpoint('/health', 'API Health'); // This should fail
+        });
+        
+        document.getElementById('testProfiles').addEventListener('click', () => {
+            testEndpoint('/profiles', 'Profiles');
+        });
+        
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            log('🚀 Starting API tests...');
+            setTimeout(() => {
+                testHealthDirect();
+            }, 500);
+            
+            setTimeout(() => {
+                testEndpoint('/profiles', 'Profiles');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

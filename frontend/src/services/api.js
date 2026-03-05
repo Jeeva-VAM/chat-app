@@ -9,6 +9,7 @@ class ApiService {
   // Make API requests (no authentication needed for simple version)
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    console.log(`🔄 API Request: ${options.method || 'GET'} ${url}`);
 
     const defaultHeaders = {
       'Content-Type': 'application/json',
@@ -26,14 +27,19 @@ class ApiService {
     try {
       const response = await fetch(url, config);
       
+      console.log(`📡 API Response: ${response.status} ${response.statusText}`);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ API Error Response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log(`✅ API Success:`, data);
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error(`💥 API request failed for ${url}:`, error);
       throw error;
     }
   }
@@ -73,6 +79,33 @@ class ApiService {
     return this.request('/health', {
       method: 'GET'
     });
+  }
+
+  // Message endpoints
+  async getUserConversations(userId) {
+    return this.request(`/conversations/${userId}`);
+  }
+
+  async getConversationMessages(conversationId, page = 1, limit = 50) {
+    return this.request(`/messages/${conversationId}?page=${page}&limit=${limit}`);
+  }
+
+  async sendMessage(messageData) {
+    return this.request('/messages', {
+      method: 'POST',
+      body: messageData
+    });
+  }
+
+  async markMessagesAsRead(conversationId, userId) {
+    return this.request(`/messages/read/${conversationId}`, {
+      method: 'PATCH',
+      body: { userId }
+    });
+  }
+
+  async searchMessages(userId, query) {
+    return this.request(`/messages/search/${userId}?q=${encodeURIComponent(query)}`);
   }
 }
 
