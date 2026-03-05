@@ -48,7 +48,7 @@ function Navbar() {
             className="message-icon"
             onClick={() => navigate("/messages")}
           />
-          <FaEnvelope className="message-icon" />
+          {/* <FaEnvelope className="message-icon" /> */}
         </div>
 
         {user && (
