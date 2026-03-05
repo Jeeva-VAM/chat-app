@@ -1,12 +1,11 @@
-// API service for communicating with the simple backend
-const API_BASE_URL = 'http://localhost:3001/api';  // Simple Backend
+
+const API_BASE_URL = 'http://localhost:3001/api';  
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
   }
 
-  // Make API requests (no authentication needed for simple version)
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
 
@@ -58,6 +57,11 @@ class ApiService {
   }
 
   async getAllProfiles(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/profiles?${queryString}`);
+  }
+
+  async getSuggestedUsers(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     return this.request(`/profiles?${queryString}`);
   }

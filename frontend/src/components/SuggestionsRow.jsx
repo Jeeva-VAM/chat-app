@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { loadMoreRequest } from "../features/slice/suggestionSlice";
+import { loadMoreRequest, resetSuggestions } from "../features/slice/suggestionSlice";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import '../styles/suggestions.css'
@@ -11,6 +11,7 @@ function SuggestionsRow() {
   const scrollRef = useRef(null);
 
   useEffect(() => {
+    dispatch(resetSuggestions());
     dispatch(loadMoreRequest());
   }, [dispatch]);
 
@@ -52,6 +53,12 @@ function SuggestionsRow() {
   if (nearEnd) dispatch(loadMoreRequest());
 };
 
+
+  const handleMessageClick = (e, userId) => {
+    e.stopPropagation();
+    navigate(`/messages/${userId}`); 
+  };
+
   return (
     <div className="suggestions-row-wrapper">
       <h2 className="suggest-user">Suggested Users</h2>
@@ -72,10 +79,7 @@ function SuggestionsRow() {
 
             <button
               className="message-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/message/${u.id}`);
-              }}
+              onClick={(e) => handleMessageClick(e, u.id)} 
             >
               Message
             </button>
