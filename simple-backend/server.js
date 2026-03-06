@@ -1,45 +1,68 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
+const http = require('http');
+const { Server } = require('socket.io');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Import routes
+const chatRoutes = require('./routes/chat');
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173'
+  }
+});
+
+io.on("connection",(socket)=>{
+   console.log("user connected");
+   socket.emit("hello","Hi user");
+});
 const PORT = process.env.PORT || 3001;
 
-// MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://razakdev07_db_user:drvve6iPq8sKjUls@cluster0.yymd2cc.mongodb.net/chat-users?retryWrites=true&w=majority&appName=Cluster0';
 let db;
 let profiles;
 console.log(MONGODB_URI)
-// Middleware
+
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
 }));
 app.use(express.json());
 
-// Connect to MongoDB
+// Chat routes
+app.use('/api/chat', chatRoutes);
+
+
 async function connectDB() {
   try {
+    // Connect with MongoClient for existing profile operations
     const client = new MongoClient(MONGODB_URI);
     await client.connect();
     db = client.db('chat-users');
     profiles = db.collection('profiles');
-    console.log('✅ Connected to MongoDB Atlas');
+    console.log('✅ Connected to MongoDB Atlas with MongoClient');
+    
+    // Also connect with Mongoose for new chat schemas
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ Connected to MongoDB Atlas with Mongoose');
+    
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
     process.exit(1);
   }
 }
 
-// Routes
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Profile server running' });
 });
 
-// Get user profile by OAuth user ID
+
 app.get('/api/profile/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -57,21 +80,20 @@ app.get('/api/profile/:userId', async (req, res) => {
   }
 });
 
-// Create or update user profile
+
 app.post('/api/profile', async (req, res) => {
   try {
     const profileData = req.body;
-    
-    // Validate required fields
+   
     if (!profileData.userId || !profileData.name || !profileData.email) {
       return res.status(400).json({ error: 'Missing required fields: userId, name, email' });
     }
     
-    // Add timestamps
+    
     const now = new Date();
     profileData.updatedAt = now;
     
-    // Upsert profile (update if exists, create if not)
+    
     const result = await profiles.findOneAndUpdate(
       { userId: profileData.userId },
       { 
@@ -95,16 +117,16 @@ app.post('/api/profile', async (req, res) => {
   }
 });
 
-// Update specific profile fields
+
 app.patch('/api/profile/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const updateData = req.body;
     
-    // Remove userId from update data to prevent changing it
+    
     delete updateData.userId;
     
-    // Add updated timestamp
+    
     updateData.updatedAt = new Date();
     
     const result = await profiles.findOneAndUpdate(
@@ -128,7 +150,7 @@ app.patch('/api/profile/:userId', async (req, res) => {
   }
 });
 
-// Get all profiles (for suggestions)
+
 app.get('/api/profiles', async (req, res) => {
   try {
     const { page = 1, limit = 20, search, exclude } = req.query;
@@ -136,12 +158,12 @@ app.get('/api/profiles', async (req, res) => {
     
     let query = {};
     
-    // Exclude specific user ID (for hiding current user from suggestions)
+    
     if (exclude) {
       query.userId = { $ne: exclude };
     }
     
-    // Add search functionality
+    
     if (search) {
       const searchQuery = {
         $or: [
@@ -150,7 +172,7 @@ app.get('/api/profiles', async (req, res) => {
         ]
       };
       
-      // Combine exclude and search queries
+      
       if (query.userId) {
         query = { $and: [{ userId: query.userId }, searchQuery] };
       } else {
@@ -191,7 +213,7 @@ app.get('/api/profiles', async (req, res) => {
   }
 });
 
-// Delete profile
+
 app.delete('/api/profile/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -212,18 +234,18 @@ app.delete('/api/profile/:userId', async (req, res) => {
   }
 });
 
-// Error handling middleware
+
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// 404 handler
+
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Start server
+
 async function startServer() {
   await connectDB();
   app.listen(PORT, () => {

@@ -16,8 +16,7 @@ function* loadMoreWorker() {
     // Get current user from localStorage
     const currentUserString = localStorage.getItem('user');
     const currentUser = currentUserString ? JSON.parse(currentUserString) : null;
-    const currentUserId = currentUser?.sub; // Google OAuth ID
-
+    const currentUserId = currentUser?.sub; 
     console.log("Current user ID:", currentUserId);
 
     const data = yield call(fetchSuggestedUsers, cursor, currentUserId);
@@ -25,7 +24,6 @@ function* loadMoreWorker() {
     yield put(loadMoreSuccess(data));
   } catch (error) {
     console.error("Failed to load suggested users:", error);
-    // You could dispatch a failure action here if needed
     // yield put(loadMoreFailure(error.message));
   }
 }

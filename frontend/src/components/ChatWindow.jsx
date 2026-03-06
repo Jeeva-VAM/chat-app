@@ -1,110 +1,144 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import MessageInput from "./MessageInput";
+import React, { useState, useRef, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { sendMessage } from '../features/slice/chatSlice';
 import { useNavigate } from "react-router-dom";
 
-function ChatWindow({ selectedUser }) {
+function ChatWindow({ conversation, messages = [], currentUserId, loading = {} }) {
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef(null);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const chatEndRef = useRef(null);
+  // Use the loading prop instead of useSelector here
 
-  // Generate initial messages based on selectedUser
-  const initialMessages = useMemo(() => {
-    if (!selectedUser) return [];
-
-    return [
-      { text: "Hello 👋", sender: "them", seen: true },
-      { text: "Hi!", sender: "me", seen: true }
-    ];
-  }, [selectedUser]);
-
-  const [messages, setMessages] = useState(initialMessages);
-
-  // Reset messages when selectedUser changes
-  useEffect(() => {
-    setMessages(initialMessages);
-  }, [initialMessages]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToBottom();
   }, [messages]);
 
-  const sendMessage = (text) => {
-    const newMessage = {
-      text,
-      sender: "me",
-      seen: false
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !conversation || !currentUserId) return;
+
+    const messageData = {
+      senderId: currentUserId,
+      messageType: 'text',
+      content: { text: newMessage.trim() }
     };
 
-    setMessages((prev) => [...prev, newMessage]);
-
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg, index) =>
-          index === prev.length - 1 ? { ...msg, seen: true } : msg
-        )
-      );
-    }, 2000);
+    try {
+      await dispatch(sendMessage({ 
+        conversationId: conversation.id || conversation._id, 
+        messageData 
+      })).unwrap();
+      
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
-  const addReaction = (index, emoji) => {
-    setMessages((prev) =>
-      prev.map((msg, i) =>
-        i === index ? { ...msg, reaction: emoji } : msg
-      )
-    );
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
-  if (!selectedUser) {
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  if (!conversation) {
     return (
-      <div className="chat-window empty">
-        <button className="back-btn" onClick={() => navigate("/dashboard")}>
-          ← Back
-        </button>
-        <h3>Select a conversation</h3>
+      <div className="chat-window">
+        <div className="chat-header">
+          <button className="back-btn" onClick={() => navigate("/dashboard")}>
+            ← Back
+          </button>
+        </div>
+        <div className="no-conversation">
+          <p>Select a conversation to start messaging</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="chat-window">
+      {/* Chat Header */}
       <div className="chat-header">
-        <h3>{selectedUser.name}</h3>
+        <img 
+          src={conversation.avatar || 'https://via.placeholder.com/40'} 
+          alt={conversation.name} 
+          className="chat-avatar"
+        />
+        <div className="chat-user-info">
+          <h3>{conversation.name}</h3>
+          <span className="chat-status">
+            {conversation.participants?.length > 2 ? 
+              `${conversation.participants.length} members` : 
+              'Online'
+            }
+          </span>
+        </div>
         <button className="back-btn" onClick={() => navigate("/dashboard")}>
           ← Back
         </button>
       </div>
 
-      <div className="chat-body">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`message ${
-              msg.sender === "me" ? "my-message" : "their-message"
-            }`}
-          >
-            <p>{msg.text}</p>
-
-            {msg.reaction && (
-              <span className="reaction">{msg.reaction}</span>
-            )}
-
-            {msg.sender === "me" && (
-              <small className="seen-status">
-                {msg.seen ? "✔✔ Seen" : "✔ Sent"}
-              </small>
-            )}
-
-            <button
-              className="react-btn"
-              onClick={() => addReaction(index, "👍")}
-            >
-              👍
-            </button>
+      {/* Messages Container */}
+      <div className="messages-container">
+        {messages.length === 0 ? (
+          <div className="no-messages">
+            <p>No messages yet. Start the conversation!</p>
           </div>
-        ))}
-        <div ref={chatEndRef} />
+        ) : (
+          messages.map(message => (
+            <div 
+              key={message._id} 
+              className={`message ${message.senderId === currentUserId ? 'sent' : 'received'}`}
+            >
+              <div className="message-content">
+                <p>{message.content?.text}</p>
+                <div className="message-meta">
+                  <span className="message-time">
+                    {formatTime(message.createdAt)}
+                  </span>
+                  {message.isEdited && (
+                    <span className="edited-indicator">edited</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
-      <MessageInput onSend={sendMessage} />
+      {/* Message Input */}
+      <div className="message-input-container">
+        <textarea
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder={`Message ${conversation.name}...`}
+          className="message-input"
+          rows="1"
+          disabled={loading.sending}
+        />
+        <button 
+          onClick={handleSendMessage}
+          className="send-button"
+          disabled={!newMessage.trim() || loading.sending}
+        >
+          {loading.sending ? 'Sending...' : 'Send'}
+        </button>
+      </div>
     </div>
   );
 }

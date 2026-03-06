@@ -1,96 +1,103 @@
 import { useState, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar";
 import ChatWindow from "../components/ChatWindow";
 import "../styles/messages.css";
-import { useParams } from "react-router-dom";
-import apiService from "../services/api";
+import { 
+  fetchConversations, 
+  createDirectConversation, 
+  fetchMessages, 
+  setActiveConversation 
+} from "../features/slice/chatSlice";
 
 function MessagesPage() {
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const { userId } = useParams();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const passedUser = location.state?.selectedUser;
+  const fullState = useSelector(state => state);
+  const chatState = useSelector(state => state.chat);
+  const { 
+    conversations = [], 
+    activeConversation = null, 
+    messages = {},
+    loading = { conversations: false, messages: false, sending: false }
+  } = chatState || {};
+  
+  // Get current user (you'll need to implement this based on your auth system)
+  const getCurrentUser = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.sub || user.id || user.userId; // Google OAuth sub or regular id
+  };
+
+  const currentUserId = getCurrentUser();
+
   console.log('selected user ID', userId);
+  console.log('passed user data', passedUser);
+  console.log('current user ID', currentUserId);
+  console.log('Full Redux state:', fullState);
+  console.log('Redux chat state:', chatState);
 
-  // Load user details when userId changes
   useEffect(() => {
-    const loadUserAndMessages = async () => {
-      if (!userId) {
-        setLoading(false);
-        return;
-      }
-
+    const initializeChat = async () => {
       try {
-        setLoading(true);
+        setPageLoading(true);
         
-        // Fetch the specific user details from MongoDB
-        const userProfile = await apiService.getUserProfile(userId);
-        console.log('Fetched user profile:', userProfile);
+        // Fetch user's conversations first if we have a current user
+        if (currentUserId) {
+          await dispatch(fetchConversations(currentUserId)).unwrap();
+        }
         
-        // Create user object for sidebar and chat
-        const selectedUserData = {
-          id: userProfile.userId || userProfile._id,
-          name: userProfile.name,
-          lastMessage: "Start conversation...",
-          unread: 0,
-          profileImage: userProfile.profileImage || userProfile.picture
-        };
-
-        setSelectedUser(selectedUserData);
-        
-        // Add this user to the users list for sidebar (if not already present)
-        setUsers(prevUsers => {
-          const userExists = prevUsers.find(u => u.id === selectedUserData.id);
-          if (!userExists) {
-            return [selectedUserData, ...prevUsers];
+        // If we have a specific userId (from message button click)
+        if (userId && currentUserId && userId !== currentUserId) {
+          try {
+            // Create or get direct conversation with this user
+            const conversationResult = await dispatch(
+              createDirectConversation({ 
+                user1Id: currentUserId, 
+                user2Id: userId 
+              })
+            ).unwrap();
+            
+            // Set as active conversation
+            dispatch(setActiveConversation(conversationResult));
+            
+            // Fetch messages for this conversation
+            if (conversationResult._id) {
+              await dispatch(fetchMessages({ 
+                conversationId: conversationResult._id 
+              })).unwrap();
+            }
+          } catch (error) {
+            console.error('Error creating conversation:', error);
           }
-          return prevUsers;
-        });
-
+        }
       } catch (error) {
-        console.error('Error loading user profile:', error);
-        
-        // Fallback: create basic user object if API fails
-        const fallbackUser = {
-          id: userId,
-          name: "User",
-          lastMessage: "Start conversation...",
-          unread: 0,
-          profileImage: "https://via.placeholder.com/40"
-        };
-        
-        setSelectedUser(fallbackUser);
-        setUsers(prev => [fallbackUser, ...prev]);
+        console.error('Error initializing chat:', error);
       } finally {
-        setLoading(false);
+        setPageLoading(false);
       }
     };
 
-    loadUserAndMessages();
-  }, [userId]);
+    initializeChat();
+  }, [userId, currentUserId, dispatch]);
 
-  // Load default users for sidebar (your existing users or fetch from API)
-  useEffect(() => {
-    const loadDefaultUsers = () => {
-      const defaultUsers = [
-        { id: 1, name: "Arun", lastMessage: "Hey there!", unread: 2 },
-        { id: 2, name: "Priya", lastMessage: "Okay 👍", unread: 0 },
-        { id: 3, name: "Kumar", lastMessage: "See you!", unread: 1 }
-      ];
-      
-      // Only set default users if no userId is provided
-      if (!userId) {
-        setUsers(defaultUsers);
-      }
-    };
+  const handleSelectConversation = async (conversation) => {
+    dispatch(setActiveConversation(conversation));
+    
+    // Fetch messages for this conversation if not already loaded
+    if (!messages[conversation.id || conversation._id]) {
+      await dispatch(fetchMessages({ conversationId: conversation.id || conversation._id }));
+    }
+  };
 
-    loadDefaultUsers();
-  }, [userId]);
-
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="message-container">
-        <div className="loading-message">Loading conversation...</div>
+        <div className="loading-message">Loading conversations...</div>
       </div>
     );
   }
@@ -98,12 +105,18 @@ function MessagesPage() {
   return (
     <div className="message-container">
       <Sidebar
-        users={users}
-        onSelectUser={setSelectedUser}
-        selectedUser={selectedUser}
+        conversations={conversations}
+        onSelectConversation={handleSelectConversation}
+        activeConversation={activeConversation}
+        passedUser={passedUser}
       />
 
-      <ChatWindow selectedUser={selectedUser} />
+      <ChatWindow 
+        conversation={activeConversation}
+        messages={messages[activeConversation?.id || activeConversation?._id]?.messages || []}
+        currentUserId={currentUserId}
+        loading={loading}
+      />
     </div>
   );
 }

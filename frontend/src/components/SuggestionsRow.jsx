@@ -54,9 +54,21 @@ function SuggestionsRow() {
 };
 
 
-  const handleMessageClick = (e, userId) => {
+  const handleMessageClick = (e, user) => {
     e.stopPropagation();
-    navigate(`/messages/${userId}`); 
+    // Pass complete user object via state
+    navigate(`/messages/${user._id || user.id}`, { 
+      state: { 
+        selectedUser: {
+          _id: user._id || user.id,
+          id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          profileImage: user.picture,
+          bio: user.bio || ''
+        }
+      }
+    });
   };
 
   return (
@@ -79,7 +91,7 @@ function SuggestionsRow() {
 
             <button
               className="message-btn"
-              onClick={(e) => handleMessageClick(e, u.id)} 
+              onClick={(e) => handleMessageClick(e, u)} 
             >
               Message
             </button>
