@@ -7,8 +7,8 @@ import "../styles/messages.css";
 
 function MessagesPage() {
   const [selectedUser, setSelectedUser] = useState(null);
-  const [conversations, setConversations] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
+  const [, setConversations] = useState([]);
+  const [, setAllUsers] = useState([]);
   const [combinedUsers, setCombinedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

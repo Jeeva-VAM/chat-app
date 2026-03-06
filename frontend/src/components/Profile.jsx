@@ -6,7 +6,6 @@ import apiService from "../services/api";
 function Profile() {
   const navigate = useNavigate();
 
-  // Chat app profile state - OAuth + additional user data
   // Profile state - loaded from MongoDB
   const [profile, setProfile] = useState({
     userId: "",
@@ -49,7 +48,7 @@ function Profile() {
   
   // UI States
   const [isEditing, setIsEditing] = useState(false);
-  const [isModified, setIsModified] = useState(false);
+  const [, setIsModified] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -207,19 +206,6 @@ function Profile() {
     return count.toString();
   };
 
-  // Helper function to check if profile is complete
-  const getProfileCompleteness = () => {
-    const fields = ['bio'];
-    const filledFields = fields.filter(field => profile[field]?.trim());
-    const hasInterests = profile.interests?.length > 0;
-    
-    let totalFields = fields.length + 1; // bio + interests
-    let completedFields = filledFields.length;
-    
-    if (hasInterests) completedFields++;
-    
-    return Math.round((completedFields / totalFields) * 100);
-  };
 
   //  Validation Function
   const validate = (name, value) => {
